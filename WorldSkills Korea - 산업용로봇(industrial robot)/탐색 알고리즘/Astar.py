@@ -1,4 +1,5 @@
 from time import time
+from random import shuffle
 
 def printm(m,x,y,z=1):      # UseFont : consalas
     m = ''.join([' ' if str(i) is 'x' else str(i) for i in m])
@@ -14,12 +15,26 @@ def printm(m,x,y,z=1):      # UseFont : consalas
         print(''.join(['└───',''.join(['┴───'] * (x - 1)),'┘']))
     print('')
 
-def exchange(m,s,e):
+def heuristic(m):        # Calcurating Heuristic
+    res = 0
+    for i in range(9):
+        if m[i] != '0':
+            y1,x1 = divmod(i,3)
+            y2,x2 = divmod(leaf.index(m[i]),3)
+            res += abs(y1 - y2) + abs(x1 - x2)        
+    return res
+
+def f(state):
+    m,g,h = state
+    return g + h
+
+def exchange(state,s,e):
+    m,g,h = state
     m = list(m)
     m[s],m[e] = m[e],m[s]
     dire = '↑→↓←'[[-3,1,3,-1].index(s-e)]
     info = [e,s,dire,m[s]]
-    return [''.join(m),info]
+    return [(''.join(m),g + 1,heuristic(m)),info]
     
 def around(pos):
     if pos in cache:
@@ -34,27 +49,29 @@ def around(pos):
     cache[pos] = res
     return res
 
-def expand(m):
+def expand(state):
     res = []
+    m,g,h = state
     for i in range(size):       
         if m[i] != '0' or i in fix:
             continue        
         for j in [j for j in around(i) if m[j] != '0' and j not in fix]:            
-            res.append(exchange(m,i,j))
+            res.append(exchange(state,i,j))
     return res
 
-def bfs(m,leaf,pos = -1,pack = -1):
+def Astar(state):
     global res
-    cur = m[:]
-    que = [cur]
+    cur = state[:]
+    Pque = [cur]
     mkd,step = {cur:-1},{cur:-1}
     while 1:
-        cur = que.pop(0)
-        if (pos == -1 and cur == leaf) or (pos != -1 and cur[pos] == pack):
+        cur = min(Pque,key = lambda state : f(state))
+        Pque.remove(cur)
+        if cur[0] == leaf:
             break
         for i,j in expand(cur):
             if i not in mkd:
-                que.append(i)
+                Pque.append(i)
                 mkd[i],step[i] = cur,j
     mkd[-2] = cur
     path = [[cur,step[cur]]]
@@ -64,10 +81,15 @@ def bfs(m,leaf,pos = -1,pack = -1):
     res += path[::-1][1:]
     return mkd[-2]
 
-m = '034570612'
 leaf = '123456700'
+m = [1,2,3,4,5,6,7,0,0]
+shuffle(m)
+m = ''.join(map(str,m))
+state = (m,0,heuristic(m))      # m, cost, heuristic
 
 print('init_state')
+m,g,h = state
+print('f({}) = g({}) + h({})'.format(g + h, g, h))
 printm(m,3,3)
 
 print('leaf_state')
@@ -79,22 +101,17 @@ fix = []
 res = []
 cache = {}
 
-ts = time()
+ts = time()             # timeStart
 
-# Optimal
-# bfs(m,leaf)
+Astar(state)
 
-# not Optimal
-for i in range(3):
-    m = bfs(m,leaf,i,leaf[i])
-    fix.append(i)
-bfs(m,leaf)
+te = time() - ts        # timeEnd
 
-te = time() - ts
-
-for m,info in res:
+for state,info in res:
+    m,g,h = state
     s,e,dire,pack = info
     print(' "{}" | [{}] ( {} to {} )\n'.format(pack,dire,s,e))
+    print(' f({}) = g({}) + h({})'.format(g + h, g, h))
     printm(m,3,3)
 
 print("{}step, {}s\n".format(len(res),round(te,3)))
