@@ -76,6 +76,8 @@ def Bidirectional_Search(m):
         res += (path if i else path[::-1])[1:]
 
     print(res)
+
+    # "left" 방향의 노드들의 스텝은 반대로 연결할 것
     
 
     
