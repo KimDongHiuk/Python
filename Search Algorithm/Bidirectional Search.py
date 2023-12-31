@@ -62,23 +62,6 @@ def Bidirectional_Search(m):
             path.append([cur,step[cur]])
         res += (path if i else path[::-1])[1:]
 
-    print(res)
-
-    # "left" 방향의 노드들의 스텝은 반대로 연결할 것
-    
-
-    
-
-
-
-# def path(mkd,step,cur):
-#     path = [[cur,step[cur]]]
-#     while mkd[cur] != -1:
-#         cur = mkd[cur]
-#         path.append([cur,step[cur]])
-#     res += path[::-1][1:]
-#     return mkd[-2]
-
 m = [1,2,3,4,5,6,7,0,0]
 shuffle(m)
 m = ''.join(map(str,m))
@@ -103,8 +86,6 @@ Bidirectional_Search(m)
 te = time() - ts
 
 for m,info in res:
-    s,e,dire,pack = info
-    print(' "{}" | [{}] ( {} to {} )\n'.format(pack,dire,s,e))
     printm(m,3,3)
 
 print("{}step, {}s\n".format(len(res),round(te,3)))
